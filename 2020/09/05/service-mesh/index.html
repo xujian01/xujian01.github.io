@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content=""><title>Service Mesh和服务Mesh化的认知和理解 | 墨鱼🦑的个人博客</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/normalize.css/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/pure-min.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.css"><meta name="generator" content="Hexo 6.0.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Service Mesh和服务Mesh化的认知和理解</h1><a id="logo" href="/.">墨鱼🦑的个人博客</a><p class="description"></p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Service Mesh和服务Mesh化的认知和理解</h1><div class="post-meta">2020-09-05</div><div class="post-content"><p>已经了解到公司基础架构部门和很多业务部门的技术已经在落地Service Mesh了，Service Mesh本身是个基础设施，最终肯定会推向各个业务，那对业务开发人员或多或少会有影响，<br>为了使平台开发工程师和业务开发工程师那时候能更好的沟通，就想对Service Mesh做一个入门的介绍。<br>Service Mesh的实践会涉及到容器相关的知识，比如docker和k8s，如果不了解并不影响这次分享，因为这个分享更多的是讲述如何理解Service Mesh。</p>
+<span id="more"></span>
+<p>通过本次分享希望大家了解：</p>
+<ul>
+<li><p>什么是service mesh？</p>
+</li>
+<li><p>它和微服务有什么关系？</p>
+</li>
+<li><p>基于服务mesh化的思想我们能做些什么？</p>
+</li>
+</ul>
+<h2 id="什么是Service-Mesh"><a href="#什么是Service-Mesh" class="headerlink" title="什么是Service Mesh"></a>什么是Service Mesh</h2><p><img src="https://img-blog.csdnimg.cn/20200827204853858.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="服务网格"><br>“网”是Service Mesh称呼的由来<br>微服务当前是什么样子，和目前的微服务之间的调用相比Service Mesh的区别在哪。<br>不需要知道目标服务在哪，只需要知道目标sidecar在哪</p>
+<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>一个专注于服务间通信的基础设施。”</p>
+<p>Linkerd的CEO William对Service Mesh的描述：<br>       对于数百个服务或数千个实例，以及不时需要重新调度的业务层实例，单个请求通过的调用链可能变的非常复杂，而且服务可能由不同的语言编写，服务通信的复杂性和重要性导致我们急需一个专门的基础设施层来处理服务间的通信，该层需要与业务代码解耦，并且具有捕获底层环境的动态机制。这就是 Service Mesh 。</p>
+<p>注： Linkerd是业界第一个Service Mesh，也是他们第一次提出Service Mesh概念。</p>
+<h3 id="诞生背景"><a href="#诞生背景" class="headerlink" title="诞生背景"></a>诞生背景</h3><p><img src="https://img-blog.csdnimg.cn/20200827205402744.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>机器之间频繁使用网络交换信息的时候需要处理网络通信的问题，比如数据丢失，顺序错误延时阻塞等问题，需要进行流控<br><img src="https://img-blog.csdnimg.cn/20200827205416289.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>TCP和HTTP等标准协议出现以后，对于网络的处理下沉到了网络栈里面，和操作系统集成在一起<br><img src="https://img-blog.csdnimg.cn/20200827205514202.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<h4 id="初代微服务模式"><a href="#初代微服务模式" class="headerlink" title="初代微服务模式"></a>初代微服务模式</h4><p><img src="https://img-blog.csdnimg.cn/20200827205540248.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>初代微服务-All-in-one<br>初代微服务模式的时候，应用程序里面加上了大量的非业务性的代码，业务开发人员除了需要关注业务<br>的实现还要关注微服务中的服务注册发现、重试、熔断等等。</p>
+<h4 id="有了微服务开发组件-x2F-库“全家桶以后”"><a href="#有了微服务开发组件-x2F-库“全家桶以后”" class="headerlink" title="有了微服务开发组件&#x2F;库“全家桶以后”"></a>有了微服务开发组件&#x2F;库“全家桶以后”</h4><p><img src="https://img-blog.csdnimg.cn/20200827205613876.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>引入了微服务开发“全家桶”，例如Spring Cloud、Netflix OSS套件以后，开发人员从繁重<br>的保证微服务治理的任务中解放出来，只需要关注自己的业务实现即可。大大简化了微服务开发的难度，<br>这也是Spring Cloud等框架后面流行的重要原因之一。</p>
+<p><strong>但是，这样就完美了吗？大家可以想想当下在进行微服务开发的时候，<br>是否真的只需要关心业务逻辑。</strong><br><img src="https://img-blog.csdnimg.cn/20200828152646352.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<blockquote>
+<p>现阶段微服务痛点：我们的服务变成了集成了中间件各种功能的胖客户端</p>
+</blockquote>
+<p><strong>“事实上，微服务开发做了这么多额外的努力仅仅是为了保证请求能够成功到达正确的服务”</strong><br>比如写一个用户服务，对用户做CRUD操作，和刚才说的这些东西有一毛钱关系吗？这些和服务本身没关系，那统一处理服务间的通讯就变成了我们需要解决的根源问题。</p>
+<h4 id="Sidecar"><a href="#Sidecar" class="headerlink" title="Sidecar"></a>Sidecar</h4><p><img src="https://img-blog.csdnimg.cn/20200828153039967.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<blockquote>
+<p>“它是一个代理，将关于服务通讯的功能抽离出来独立运行。”</p>
+</blockquote>
+<p>战争片里面的战车。吃鸡里面也有<br>这种在微服务中将业务逻辑与服务通信解藕，并分离为两个独立运行组件的做法，正是 Service Mesh 概念的雏形。<br>那我们再来看一下Sidecar在服务里是以什么形式存在？<br><img src="https://img-blog.csdnimg.cn/20200828153208644.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>这个时期的Sidecar是有局限性的，各个企业为自己的基础架构定制的。</p>
+<h4 id="Service-Mesh"><a href="#Service-Mesh" class="headerlink" title="Service Mesh"></a>Service Mesh</h4><p>有了Sidecar以后，那就有人提出了基于Sidecar的通用型的解决方案<br>Service Mesh更强调Sidecar连接形成的网络<br><img src="https://img-blog.csdnimg.cn/20200828153337921.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<blockquote>
+<p>“Service Mesh是基于Sidecar的通用方案。”<br>“Service Mesh 的愿景是希望开发者再也不需要将精力花费在服务通信上。<br>服务通信由每个微服务的 Sidecar 负责”</p>
+</blockquote>
+<h3 id="Service-Mesh-主要优势"><a href="#Service-Mesh-主要优势" class="headerlink" title="Service Mesh-主要优势"></a>Service Mesh-主要优势</h3><p><img src="https://img-blog.csdnimg.cn/20200828153543742.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<ul>
+<li>去中心化：集中式代理变为分布式代理，避免单点故障，比如路由转发、认证鉴权由统一的网关服务变为以进程的方式和业务服务进程共存</li>
+<li>跨语言：无需一个语言一个客户端，均可以HTTP、TCP、gRPC等方式通信</li>
+<li>和业务解耦：将管理和运维功能从业务服务中抽离，避免中间件客户端或服务端版本升级对业务造成的影响</li>
+<li>其他：不需要应用程序做大量改动</li>
+</ul>
+<p><strong>Service Mesh是一个基于Sidecar代理模型来处理服务间通信的基础设施。</strong></p>
+<h2 id="Service-Mesh的实现：Istio"><a href="#Service-Mesh的实现：Istio" class="headerlink" title="Service Mesh的实现：Istio"></a>Service Mesh的实现：Istio</h2><h3 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h3><p><img src="https://img-blog.csdnimg.cn/20200828153931427.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20200828153942486.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<p> 应用集装箱被docker这个货船运载着在大海上无忧无虑的遨游。<br>K8s是掌舵者，他来管理和控制货船的行为。<br>想在大海上无忧无虑的航行，还需要什么，对，帆，有了帆，船在能走的更稳，那这个帆就是我们要说的Istio</p>
+<p><img src="https://img-blog.csdnimg.cn/20200828154044207.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>是Service Mesh的一个完整的解决方案，作为透明的一层接入到现有的分布式应用程序里。并提供保护、连接和监控微服务的统一方法。</p>
+<h3 id="总体架构"><a href="#总体架构" class="headerlink" title="总体架构"></a>总体架构</h3><p><img src="https://img-blog.csdnimg.cn/20200828154241531.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>Istio 服务网格从逻辑上分为数据平面和控制平面。<br><strong>数据平面</strong> 由一组智能代理（Envoy）组成，被部署为 sidecar。这些代理负责协调和控制微服务之间的所有网络通信。他们还收集和报告所有网格流量的遥测数据。<br><strong>控制平面</strong> 管理并配置代理来进行流量路由。</p>
+<p>服务发现指的是发现sidecar暴露的ip和端口。Istio有一个注册表（存放服务的地址）来支撑服务路由和负载均衡，它本身不提供服务发现，它是基于底层平台的服务注册发现能力，<br>顺便将服务的信息通过Pilot组件注册到其自身的注册表里。<br>Sidecar流量劫持，Service和envoy的通信：iptables捕获和重定向</p>
+<h4 id="Envoy"><a href="#Envoy" class="headerlink" title="Envoy"></a>Envoy</h4><p><img src="https://img-blog.csdnimg.cn/20200828154456113.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>“用于协调服务网格中所有服务的入站和出站流量。”<br>Envoy（使者的意思） 是 istio 中负责”干活”的模块,如果将整个 istio 体系比喻为一个施工队,那么 Envoy 就是最底层负责搬砖的民工, 所有体力活都由 Envoy 完成. 所有需要控制,决策,管理的功能都是其他模块来负责,然后配置给 Envoy。</p>
+<h4 id="Pilot"><a href="#Pilot" class="headerlink" title="Pilot"></a>Pilot</h4><p><img src="https://img-blog.csdnimg.cn/20200828170911887.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<p>Envoy在其中扮演的负责搬砖的民工角色, 而指挥Envoy工作的民工头就是Pilot模块.<br>Pilot（领航员的意思）提供了连接，控制的功能。</p>
+<p>1、平台启动一个服务的新实例，该实例通知其平台适配器。<br>2、平台适配器使用 Pilot 抽象模型注册实例。<br>3、Pilot 将流量规则和配置派发给 Envoy 代理，来传达此次更改。</p>
+<ul>
+<li><p>Envoy API负责和Envoy的通讯, 主要是发送服务发现<br>信息和流量控制规则给Envoy，这些API将istio和Envoy<br>的实现解耦，使得Envoy可以被其他厂商的数据平面产品接管。</p>
+</li>
+<li><p>Abstract Model 定了一个抽象模型,定义在istio中什么是<br>服务以从特定平台细节中解耦, 为跨平台提供基础。</p>
+</li>
+<li><p>Platform Adapter则是这个抽象模型的现实实现版本, 用<br>于对接外部的不同平台。</p>
+</li>
+<li><p>Rules API 提供接口给外部调用以管理 Pilot, 包括<br>命令行工具istioctl以及未来可能出现的第三方管理界面。</p>
+</li>
+</ul>
+<p><strong>基于上述的架构设计, Pilot提供以下重要功能：</strong></p>
+<ul>
+<li>请求路由</li>
+<li>服务发现和负载均衡</li>
+<li>故障处理</li>
+<li>故障注入</li>
+<li>规则配置<h4 id="Citadel"><a href="#Citadel" class="headerlink" title="Citadel"></a>Citadel</h4>“堡垒”的意思。<br>“之前的版本叫做Istio-Auth。<br>Citadel通过内置的身份和证书管理，可以支持强大的服务到服务以及最终用户的身份验证。”</li>
+</ul>
+<p><strong>重要功能：</strong></p>
+<ul>
+<li>加密</li>
+<li>身份认证</li>
+<li>访问控制</li>
+<li>密钥管理<h4 id="Galley"><a href="#Galley" class="headerlink" title="Galley"></a>Galley</h4><img src="https://img-blog.csdnimg.cn/20200828171655905.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>“之前叫做Mixer。<br>Galley 是 Istio 的配置验证、提取、处理和分发组件。它负责将其余的 Istio 组件与从底层平台<br>（例如 Kubernetes）获取用户配置的细节隔离开来。”</li>
+</ul>
+<p><strong>重要功能：</strong></p>
+<ul>
+<li>前提条件检查，如：认证，黑白名单，ACL检查</li>
+<li>配额管理，如：限流</li>
+<li>遥测报告，如：日志，监控，指标<h3 id="核心特性"><a href="#核心特性" class="headerlink" title="核心特性"></a>核心特性</h3><img src="https://img-blog.csdnimg.cn/20200828172819549.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></li>
+</ul>
+<p><strong>在前面的组件加持下提供的核心特性：</strong></p>
+<ul>
+<li>流量管理。路由，负载均衡，定义流量配比等。</li>
+<li>可观察性。监控，日志，追踪等。</li>
+<li>服务身份和安全。身份认证，访问控制和流量安全防护等。</li>
+</ul>
+<p><strong>Istio 是基于Service Mesh，对微服务提供连接，保护，控制，观测的完整解决方案。</strong></p>
+<h2 id="服务Mesh化"><a href="#服务Mesh化" class="headerlink" title="服务Mesh化"></a>服务Mesh化</h2><p><img src="https://img-blog.csdnimg.cn/20200828174246940.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>先来思考一个问题：<br>当Service Mesh将业务和服务间的通信解耦之后，当前的微服务还能不能再纯粹一点？<br><img src="https://img-blog.csdnimg.cn/20200828174328345.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>Service Mesh中的Sidecar的关键在于“解耦”。</p>
+<p>而Sidecar这个车舱里不仅仅可以“坐”流量管理的逻辑，也可以将中间件放入其中，<br>实现业务和中间件的解耦。</p>
+<p>即服务Mesh化 &#x3D; 服务（中间件） + Sidecar</p>
+<h2 id="API-Gateway-Mesh"><a href="#API-Gateway-Mesh" class="headerlink" title="API Gateway Mesh"></a>API Gateway Mesh</h2><p><img src="https://img-blog.csdnimg.cn/20200828174603532.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzE4NTE1MTU1,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>上面这张图是一个云原生，南北+东西流量的架构图，在Service Mesh环境下使用集中式API Gateway的架构图<br>为什么有了service mesh还需要API Gateway？</p>
+<h4 id="API-Gateway-VS-Service-Mesh"><a href="#API-Gateway-VS-Service-Mesh" class="headerlink" title="API Gateway VS Service Mesh"></a>API Gateway VS Service Mesh</h4><p>之前了解到Service Mesh也是提供了路由转发，负载均衡，认证、限流等功能，那他和传统的API Gateway有什么区别呢？</p>
+<ul>
+<li>API Gateway将内部服务以可管理的方式暴露出去，Service Mesh将业务逻辑和应用网络解耦；</li>
+<li>API Gateway管理南北流量（外部流量），Service Mesh管理东西流量（服务内部流量）；</li>
+<li>API Gateway是中心化的路由转发，Service Mesh是类似分布式的，客户端下的路由转发，Sidecar 之间是点对点的调用；</li>
+<li>API Gateway里面可能会包含偏业务的一些逻辑， Service Mesh只管理服务间的流量；</li>
+</ul>
+<p><strong>随着两者的发展，他们开始有了融合，功能上逐渐出现了重叠，那我们能不能把两者合为一体呢？</strong><br><img src="https://img-blog.csdnimg.cn/20200828174756340.png#pic_center" alt="在这里插入图片描述"><br>结合前面对服务Mesh化的理解，可以得出一个结论：<br>API Gateway Mesh &#x3D; API Gateway + Sidecar，<br>类似的消息队列（MessageQueue）+ Sidecar &#x3D; Message Mesh。</p>
+<h4 id="带来的好处"><a href="#带来的好处" class="headerlink" title="带来的好处"></a>带来的好处</h4><p><img src="https://img-blog.csdnimg.cn/20200828174850564.png#pic_center" alt="在这里插入图片描述"><br>中心化，集中式网关，目前最常见的<br>中心化网关：单点问题，多一次网络消耗<br><img src="https://img-blog.csdnimg.cn/20200828174933474.png#pic_center" alt="在这里插入图片描述"><br>客户端嵌入式，去中心化，Rout提供简单的路由，将更偏业务的认证鉴权，协议转换，复杂的路由抽象成一个gateway的jar包或者js文件，和语言有关<br>客户端嵌入式网关（去中心化）：<br>不同语言需要提供不同的client，<br>接入困难，客户端升级困难<br><img src="https://img-blog.csdnimg.cn/20200828175015343.png#pic_center" alt="在这里插入图片描述"><br>API Gateway Mesh，去中心化，基于Sidecar代理模型，将gateway以独立进程和应用部署在一起，达到低成本接入，平滑升级，支持多语言系统<br><strong>API Gateway Mesh &#x3D; API Gateway + Sidecar</strong></p>
+<h2 id="回顾"><a href="#回顾" class="headerlink" title="回顾"></a>回顾</h2><p>1、什么是service mesh？<br>答：基于Sidecar代理模式的处理服务间通信和流量管理的基础设施。</p>
+<p>2、Service Mesh和微服务有什么关系？<br>答：它是云原生时代下保证微服务架构之间通信的一种解决方案，使微服务本身只需关注业务实现。</p>
+<p>3、基于服务mesh化的思想我们能做些什么？<br>答：我们可以借鉴Sidecar的解耦思想，将业务变得更纯粹，如API Gateway Mesh，MessageQueue Mesh等。</p>
+</div><div class="tags"><a href="/tags/ServiceMesh/"><i class="fa fa-tag"></i>ServiceMesh</a></div><div class="post-nav"><a class="pre" href="/2020/09/15/data-sync-scheme/">聊聊数据同步方案</a><a class="next" href="/2020/08/10/bean-copy/">Bean Copy也就这么点事了！</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://example.com"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/Apollo/" style="font-size: 15px;">Apollo</a> <a href="/tags/SpringBoot/" style="font-size: 15px;">SpringBoot</a> <a href="/tags/Canal/" style="font-size: 15px;">Canal</a> <a href="/tags/Java/" style="font-size: 15px;">Java</a> <a href="/tags/Mybatis/" style="font-size: 15px;">Mybatis</a> <a href="/tags/RocketMQ/" style="font-size: 15px;">RocketMQ</a> <a href="/tags/Gson/" style="font-size: 15px;">Gson</a> <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" style="font-size: 15px;">多线程</a> <a href="/tags/GitLab/" style="font-size: 15px;">GitLab</a> <a href="/tags/WebHook/" style="font-size: 15px;">WebHook</a> <a href="/tags/Spring/" style="font-size: 15px;">Spring</a> <a href="/tags/Swagger/" style="font-size: 15px;">Swagger</a> <a href="/tags/ServiceMesh/" style="font-size: 15px;">ServiceMesh</a> <a href="/tags/Skywalking/" style="font-size: 15px;">Skywalking</a> <a href="/tags/ES/" style="font-size: 15px;">ES</a> <a href="/tags/MongoDB/" style="font-size: 15px;">MongoDB</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2021/06/25/print-xyz/">使用三个线程，按顺序打印X，Y，Z，连续打印10次</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/06/19/enhance-jdk-proxy-v2/">实现一个增强版的JDK动态代理V2.0</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/06/15/enhance-jdk-proxy-v1/">实现一个增强版的JDK动态代理V1.0</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/05/13/mybatis-plugin/">这么强大的Mybatis插件机制原来就是这？</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/05/10/spring-circle-depence/">探索Spring循环依赖的细节</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/04/12/skywalking-plugin-principle/">Skywalking如何通过修改字节码让插件生效</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/03/26/gson-serialize-fail/">Gson序列化LinkedHashMap.Entry失败的探索</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/12/20/springboot-es-mongodb/">SpringBoot中使用ES和MongoDB常用API</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/11/20/java-complier-optimization/">又长见识了！JVM编译优化</a></li><li class="post-list-item"><a class="post-list-link" href="/2020/11/15/swagger+yapi/">Swagger API Spec + Swagger Codegen + YAPI管理接口文档</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="https://blog.csdn.net/qq_18515155" title="CSDN-徐小陌的博客" target="_blank">CSDN-徐小陌的博客</a><ul></ul><a href="https://www.zhihu.com/people/xu-jian-1-1" title="知乎-倔强的码农" target="_blank">知乎-倔强的码农</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2022 <a href="/." rel="nofollow">墨鱼🦑的个人博客.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/js/copycode.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=1.0.0"></script></div></body></html>
